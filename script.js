@@ -134,14 +134,12 @@ document.getElementById('cart-checkout-btn').addEventListener('click', () => {
     checkoutSection.scrollIntoView({ behavior: 'smooth' });
 });
 
-function prepareWhatsAppMessage(orderDetails) {
-    const phoneNumber = '+919646336832'; // Your specified number
-    
-    // Construct message
-    const message = `New Order Details:
+function prepareOrderMessage(orderDetails) {
+    return `New Order from Riverside Restaurant:
 Name: ${orderDetails.customerName}
 Phone: ${orderDetails.phoneNumber}
-Address: ${orderDetails.houseDetails}, ${orderDetails.villageName}
+House: ${orderDetails.houseDetails}
+Village: ${orderDetails.villageName}
 
 Order Items:
 ${orderDetails.items.join('\n')}
@@ -149,12 +147,6 @@ ${orderDetails.items.join('\n')}
 Total Price: ₹${orderDetails.totalPrice}
 
 Payment Method: Cash on Delivery`;
-    
-    // Encode message for WhatsApp
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Open WhatsApp with pre-filled message
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
 }
 
 document.getElementById('customer-form').addEventListener('submit', (e) => {
@@ -179,7 +171,37 @@ document.getElementById('customer-form').addEventListener('submit', (e) => {
     
     // Send message based on payment method
     if (paymentMethod === 'cash') {
-        prepareWhatsAppMessage(orderDetails);
+        const smsMessage = prepareOrderMessage(orderDetails);
+        
+        // Create a temporary textarea to copy the message
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = smsMessage;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        
+        // Show modal with copied message and instructions
+        const modal = document.createElement('div');
+        modal.innerHTML = `
+            <div style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); 
+                        background:white; padding:20px; border:2px solid black; 
+                        text-align:center; z-index:1000; max-width:90%; width:300px;">
+                <h2>Order Ready to Send</h2>
+                <p>Order details have been copied to your clipboard.</p>
+                <p>Please send this message via SMS to +919646336832</p>
+                <button onclick="this.closest('div').remove()">Close</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Optional: Open SMS app on mobile devices
+        const smsLink = document.createElement('a');
+        smsLink.href = `sms:+919646336832?body=${encodeURIComponent(smsMessage)}`;
+        smsLink.style.display = 'none';
+        document.body.appendChild(smsLink);
+        smsLink.click();
+        document.body.removeChild(smsLink);
     }
     
     // Reset cart and form
