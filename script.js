@@ -187,11 +187,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = document.querySelector('.close-modal');
     const proceedToCheckout = document.getElementById('proceed-to-checkout');
     const mainPageProceedToCheckout = document.getElementById('main-page-proceed-to-checkout');
+    const checkoutSection = document.getElementById('checkout');
 
     // Function to open cart modal
     function openCartModal() {
         updateCartUI();
         cartModal.style.display = 'block';
+    }
+
+    // Function to open checkout section
+    function openCheckoutSection() {
+        // If cart is empty, show alert
+        if (cart.length === 0) {
+            alert('Your cart is empty. Please add items before checkout.');
+            return;
+        }
+        
+        // Hide cart modal if open
+        cartModal.style.display = 'none';
+        
+        // Show checkout section
+        checkoutSection.style.display = 'block';
+        checkoutSection.scrollIntoView({ behavior: 'smooth' });
     }
 
     // Cart icon click to open modal
@@ -210,11 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Proceed to checkout from cart modal
-    proceedToCheckout.addEventListener('click', () => {
-        cartModal.style.display = 'none';
-        document.getElementById('checkout').style.display = 'block';
-        document.getElementById('checkout').scrollIntoView({ behavior: 'smooth' });
-    });
+    proceedToCheckout.addEventListener('click', openCheckoutSection);
 
     // Main page "Proceed to Checkout" button
     if (mainPageProceedToCheckout) {
@@ -225,8 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // Open cart modal first
-            openCartModal();
+            // Open checkout section directly
+            openCheckoutSection();
         });
     }
 });
