@@ -1,84 +1,92 @@
+// Menu Items Data
 const menuItems = [
-    { 
-        name: "Samosa", 
-        price: 30 
+    {
+        name: "Aalo Tikki",
+        price: 30,
+        image: "images/aalo-tikki.jpg",
+        description: "Crispy potato patties served with tangy chutney"
     },
-    { 
-        name: "Spring Roll", 
-        price: 40, 
-        image: "images/spring-roll.txt" 
+    {
+        name: "Soya Chaap",
+        price: 50,
+        image: "images/soya-chaap.jpg",
+        description: "Delicious marinated soya chaap, grilled to perfection"
     },
-    { 
-        name: "Bread Pakora", 
-        price: 35, 
-        image: "images/bread-pakora.txt" 
-    },
-    { 
-        name: "Aalo Tikki", 
-        price: 25, 
-        image: "images/aalo-tikki.txt" 
-    },
-    { 
-        name: "Malai Soya Chaap", 
-        price: 50, 
-        image: "images/soya-chaap.txt" 
-    },
-    { 
-        name: "Kulcha", 
-        price: 10 
+    {
+        name: "Kulcha",
+        price: 20,
+        image: "images/kulcha.jpg",
+        description: "Soft, buttery traditional Indian bread"
     }
 ];
 
-// Modified cart to track quantities
-const cart = [];
+// Cart Management
+let cart = [];
 
+// Render Menu Items
 function renderMenu() {
     const menuContainer = document.getElementById('menu-items');
-    menuContainer.innerHTML = menuItems.map(item => `
-        <div class="menu-item">
-            ${item.image ? `<img src="${item.image}" alt="${item.name}" class="menu-item-image">` : ''}
+    
+    menuItems.forEach((item, index) => {
+        const menuItemElement = document.createElement('div');
+        menuItemElement.classList.add('menu-item');
+        
+        menuItemElement.innerHTML = `
+            <img src="${item.image}" alt="${item.name}" class="menu-item-image">
             <div class="menu-item-details">
                 <h3>${item.name}</h3>
                 <p>₹${item.price}</p>
-                <div class="cart-controls">
-                    <button onclick="addToCart('${item.name}', ${item.price}, '${item.image || ''}')">Add to Cart</button>
-                </div>
+                <button onclick="addToCart(${index})">Add to Cart</button>
             </div>
-        </div>
-    `).join('');
+        `;
+        
+        menuContainer.appendChild(menuItemElement);
+    });
 }
 
-function addToCart(name, price, image) {
-    // Find existing item in cart
-    const existingItem = cart.find(item => item.name === name);
+// Add to Cart Function
+function addToCart(index) {
+    const item = menuItems[index];
+    const existingItem = cart.find(cartItem => cartItem.name === item.name);
     
     if (existingItem) {
-        // Increment quantity if item exists
         existingItem.quantity += 1;
     } else {
-        // Add new item to cart
-        cart.push({ 
-            name, 
-            price, 
-            image, 
-            quantity: 1 
+        cart.push({
+            ...item,
+            quantity: 1
         });
     }
-    
-    // Add animation to the added item's button
-    const menuItems = document.querySelectorAll('.menu-item');
-    menuItems.forEach(item => {
-        if (item.querySelector('h3').textContent === name) {
-            item.classList.add('cart-item-added');
-            setTimeout(() => {
-                item.classList.remove('cart-item-added');
-            }, 500);
-        }
-    });
     
     updateCartUI();
 }
 
+// Increase Quantity
+function increaseQuantity(event) {
+    const index = event.target.getAttribute('data-index');
+    cart[index].quantity += 1;
+    updateCartUI();
+}
+
+// Decrease Quantity
+function decreaseQuantity(event) {
+    const index = event.target.getAttribute('data-index');
+    if (cart[index].quantity > 1) {
+        cart[index].quantity -= 1;
+    } else {
+        cart.splice(index, 1);
+    }
+    updateCartUI();
+}
+
+// Remove Item
+function removeItem(event) {
+    const index = event.target.getAttribute('data-index');
+    cart.splice(index, 1);
+    updateCartUI();
+}
+
+// Update Cart UI
 function updateCartUI() {
     const cartCount = document.getElementById('cart-count');
     const cartItemsContainer = document.getElementById('cart-items-container');
@@ -158,36 +166,66 @@ function updateCartUI() {
     });
 }
 
-function decreaseQuantity(e) {
-    const index = e.target.getAttribute('data-index');
-    if (cart[index].quantity > 1) {
-        cart[index].quantity -= 1;
+// Email.js Configuration
+const EMAILJS_USER_ID = 'xXgYNdFCzWnlGJ2Mm';
+const EMAILJS_SERVICE_ID = 'service_3qwark7';
+const EMAILJS_TEMPLATE_ID = 'template_sqzhuk3';
+
+// Initialize Email.js
+function initEmailJS() {
+    if (typeof emailjs !== 'undefined') {
+        emailjs.init(EMAILJS_USER_ID);
+        console.log('Email.js initialized');
     } else {
-        cart.splice(index, 1);
+        console.error('Email.js library not loaded');
     }
-    updateCartUI();
 }
 
-function increaseQuantity(e) {
-    const index = e.target.getAttribute('data-index');
-    cart[index].quantity += 1;
-    updateCartUI();
+// Send Order Confirmation Email
+function sendOrderConfirmationEmail(orderDetails) {
+    // Ensure Email.js is properly configured
+    if (typeof emailjs === 'undefined') {
+        console.error('Email.js not loaded');
+        return;
+    }
+
+    const templateParams = {
+        to_email: orderDetails.email,
+        from_name: 'Riverside Restaurant',
+        customer_name: orderDetails.name,
+        customer_email: orderDetails.email,
+        order_items: orderDetails.items.map(item => 
+            `${item.name} x ${item.quantity} - ₹${item.price * item.quantity}`
+        ).join('\n'),
+        total_amount: orderDetails.total.toFixed(2),
+        order_date: new Date().toLocaleString()
+    };
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+        .then(function(response) {
+            console.log('Order confirmation email sent!', response.status, response.text);
+            alert('Order confirmed! Check your email for details.');
+        }, function(error) {
+            console.error('Email send failed:', error);
+            alert('Order placed, but email confirmation failed.');
+        });
 }
 
-function removeItem(e) {
-    const index = e.target.getAttribute('data-index');
-    cart.splice(index, 1);
-    updateCartUI();
-}
-
-// Cart Management
+// Cart and Modal Management
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Email.js
+    initEmailJS();
+
+    // Render menu items
+    renderMenu();
+
     const cartIcon = document.getElementById('cart-icon');
     const cartModal = document.getElementById('cart-modal');
     const closeModal = document.querySelector('.close-modal');
     const proceedToCheckout = document.getElementById('proceed-to-checkout');
     const mainPageProceedToCheckout = document.getElementById('main-page-proceed-to-checkout');
     const checkoutSection = document.getElementById('checkout');
+    const checkoutForm = document.getElementById('customer-form');
 
     // Function to open cart modal
     function openCartModal() {
@@ -231,24 +269,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Main page "Proceed to Checkout" button
     if (mainPageProceedToCheckout) {
-        mainPageProceedToCheckout.addEventListener('click', () => {
-            // If cart is empty, show alert
-            if (cart.length === 0) {
-                alert('Your cart is empty. Please add items before checkout.');
-                return;
-            }
+        mainPageProceedToCheckout.addEventListener('click', openCheckoutSection);
+    }
+
+    // Checkout form submission
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Open checkout section directly
-            openCheckoutSection();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+            
+            const orderDetails = {
+                name: name,
+                email: email,
+                phone: phone,
+                address: address,
+                paymentMethod: paymentMethod,
+                items: cart,
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+            };
+
+            // Send order confirmation email
+            sendOrderConfirmationEmail(orderDetails);
+
+            // Reset cart and form
+            cart = [];
+            updateCartUI();
+            checkoutForm.reset();
+            checkoutSection.style.display = 'none';
         });
     }
 });
-
-// Initialize
-document.addEventListener('DOMContentLoaded', renderMenu);
-
-// EmailJS Integration
-// Note: You'll need to sign up at https://www.emailjs.com/ and get your credentials
-const EMAIL_JS_USER_ID = 'YOUR_USER_ID';
-const EMAIL_JS_SERVICE_ID = 'YOUR_SERVICE_ID';
-const EMAIL_JS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
