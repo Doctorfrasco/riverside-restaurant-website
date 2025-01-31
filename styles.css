@@ -394,6 +394,20 @@ footer {
     font-weight: bold;
 }
 
+.cart-total-badge {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background-color: #2ed573;
+    color: white;
+    border-radius: 15px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+}
+
 /* Cart Modal Styles */
 .modal {
     display: none;

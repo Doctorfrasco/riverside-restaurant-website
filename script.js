@@ -83,21 +83,29 @@ function updateCartUI() {
     const cartCount = document.getElementById('cart-count');
     const cartItemsContainer = document.getElementById('cart-items-container');
     const cartTotal = document.getElementById('cart-total');
+    const mainPageCartTotal = document.getElementById('main-page-cart-total');
     
     // Update cart count
-    cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    cartCount.textContent = totalItems;
+    
+    // Update main page cart total
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (mainPageCartTotal) {
+        mainPageCartTotal.textContent = `₹${totalPrice.toFixed(2)}`;
+    }
     
     // Clear existing cart items
     cartItemsContainer.innerHTML = '';
     
     // Populate cart items
-    let totalPrice = 0;
+    let detailedTotalPrice = 0;
     cart.forEach((item, index) => {
         const cartItemElement = document.createElement('div');
         cartItemElement.classList.add('cart-item');
         
         const itemTotal = item.price * item.quantity;
-        totalPrice += itemTotal;
+        detailedTotalPrice += itemTotal;
         
         cartItemElement.innerHTML = `
             <div class="cart-item-details">
@@ -118,8 +126,8 @@ function updateCartUI() {
         cartItemsContainer.appendChild(cartItemElement);
     });
     
-    // Update total price
-    cartTotal.textContent = totalPrice.toFixed(2);
+    // Update total price in modal
+    cartTotal.textContent = detailedTotalPrice.toFixed(2);
     
     // Add event listeners for quantity and remove buttons
     document.querySelectorAll('.decrease-quantity').forEach(btn => {
