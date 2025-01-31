@@ -84,6 +84,7 @@ function updateCartUI() {
     const cartItemsContainer = document.getElementById('cart-items-container');
     const cartTotal = document.getElementById('cart-total');
     const mainPageCartTotal = document.getElementById('main-page-cart-total');
+    const checkoutTotalElement = document.getElementById('checkout-total');
     
     // Update cart count
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -93,6 +94,11 @@ function updateCartUI() {
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     if (mainPageCartTotal) {
         mainPageCartTotal.textContent = `₹${totalPrice.toFixed(2)}`;
+    }
+    
+    // Update checkout total on main page
+    if (checkoutTotalElement) {
+        checkoutTotalElement.textContent = `Total: ₹${totalPrice.toFixed(2)}`;
     }
     
     // Clear existing cart items
