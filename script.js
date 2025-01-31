@@ -49,14 +49,14 @@ function renderMenu() {
 }
 
 function addToCart(name, price, image) {
-    // Check if item already exists in cart
+    // Find existing item in cart
     const existingItem = cart.find(item => item.name === name);
     
     if (existingItem) {
         // Increment quantity if item exists
         existingItem.quantity += 1;
     } else {
-        // Add new item with quantity 1
+        // Add new item to cart
         cart.push({ 
             name, 
             price, 
@@ -64,6 +64,17 @@ function addToCart(name, price, image) {
             quantity: 1 
         });
     }
+    
+    // Add animation to the added item's button
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+        if (item.querySelector('h3').textContent === name) {
+            item.classList.add('cart-item-added');
+            setTimeout(() => {
+                item.classList.remove('cart-item-added');
+            }, 500);
+        }
+    });
     
     updateCart();
 }
@@ -123,10 +134,33 @@ document.getElementById('cart-checkout-btn').addEventListener('click', () => {
     checkoutSection.scrollIntoView({ behavior: 'smooth' });
 });
 
+function prepareWhatsAppMessage(orderDetails) {
+    const phoneNumber = '+919646336832'; // Your specified number
+    
+    // Construct message
+    const message = `New Order Details:
+Name: ${orderDetails.customerName}
+Phone: ${orderDetails.phoneNumber}
+Address: ${orderDetails.houseDetails}, ${orderDetails.villageName}
+
+Order Items:
+${orderDetails.items.join('\n')}
+
+Total Price: ₹${orderDetails.totalPrice}
+
+Payment Method: Cash on Delivery`;
+    
+    // Encode message for WhatsApp
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Open WhatsApp with pre-filled message
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+}
+
 document.getElementById('customer-form').addEventListener('submit', (e) => {
     e.preventDefault();
     
-    // Collect form data using new input IDs
+    // Collect form data
     const name = document.getElementById('full-name').value;
     const phone = document.getElementById('phone-number').value;
     const houseDetails = document.getElementById('house-details').value;
@@ -143,64 +177,16 @@ document.getElementById('customer-form').addEventListener('submit', (e) => {
         totalPrice: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     };
     
+    // Send message based on payment method
     if (paymentMethod === 'cash') {
-        // Prepare SMS-ready message
-        const smsMessage = `New Order from Riverside Restaurant:
-Name: ${orderDetails.customerName}
-Phone: ${orderDetails.phoneNumber}
-House: ${orderDetails.houseDetails}
-Village: ${orderDetails.villageName}
-
-Order Details:
-${orderDetails.items.join('\n')}
-
-Total Price: ₹${orderDetails.totalPrice}
-
-Please confirm this order.`;
-        
-        // Create a temporary textarea to copy the message
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = smsMessage;
-        document.body.appendChild(tempTextArea);
-        tempTextArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempTextArea);
-        
-        // Show modal with copied message and instructions
-        const modal = document.createElement('div');
-        modal.innerHTML = `
-            <div style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); 
-                        background:white; padding:20px; border:2px solid black; 
-                        text-align:center; z-index:1000;">
-                <h2>Order Ready to Send</h2>
-                <p>Order details have been copied to your clipboard.</p>
-                <p>Please send this message via SMS to your preferred number.</p>
-                <button onclick="this.closest('div').remove()">Close</button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    } else {
-        // WhatsApp Integration with list formatting
-        const whatsappMessage = `New Order from Riverside Restaurant:
-Name: ${orderDetails.customerName}
-Phone: ${orderDetails.phoneNumber}
-House: ${orderDetails.houseDetails}
-Village: ${orderDetails.villageName}
-
-Order Details:
-${orderDetails.items.join('\n')}
-
-Total Price: ₹${orderDetails.totalPrice}
-
-Please confirm this order.`;
-        
-        // Encode the message for WhatsApp
-        const encodedMessage = encodeURIComponent(whatsappMessage);
-        const phoneNumber = '+919646336832'; 
-        
-        // Open WhatsApp with pre-filled message
-        window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+        prepareWhatsAppMessage(orderDetails);
     }
+    
+    // Reset cart and form
+    cart = [];
+    updateCart();
+    e.target.reset();
+    document.getElementById('checkout').style.display = 'none';
 });
 
 // Initialize

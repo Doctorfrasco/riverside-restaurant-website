@@ -350,3 +350,69 @@ footer {
 #cart-checkout-btn:hover i {
     transform: translateX(5px);
 }
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .logo-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .brand-name h1 {
+        font-size: 1.8rem;
+    }
+
+    #menu-items {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-item {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .menu-item-details {
+        text-align: center;
+        width: 100%;
+    }
+
+    #cart, #checkout {
+        width: 95%;
+        margin: 10px auto;
+        padding: 15px;
+    }
+
+    #customer-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #customer-form input, 
+    #customer-form select {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Cart Animation */
+@keyframes bounce-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.2); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.cart-item-added {
+    animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.menu-item button {
+    transition: all 0.3s ease;
+}
+
+.menu-item button:active {
+    transform: scale(0.95);
+}
