@@ -104,6 +104,15 @@ function updateCartUI() {
     // Clear existing cart items
     cartItemsContainer.innerHTML = '';
     
+    // If cart is empty, show message
+    if (cart.length === 0) {
+        cartItemsContainer.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #888;">
+                Your cart is empty. Start adding items!
+            </div>
+        `;
+    }
+    
     // Populate cart items
     let detailedTotalPrice = 0;
     cart.forEach((item, index) => {
@@ -171,18 +180,22 @@ function removeItem(e) {
     updateCartUI();
 }
 
-// Modal Functionality
+// Cart Management
 document.addEventListener('DOMContentLoaded', () => {
     const cartIcon = document.getElementById('cart-icon');
     const cartModal = document.getElementById('cart-modal');
     const closeModal = document.querySelector('.close-modal');
     const proceedToCheckout = document.getElementById('proceed-to-checkout');
+    const mainPageProceedToCheckout = document.getElementById('main-page-proceed-to-checkout');
 
-    // Open cart modal
-    cartIcon.addEventListener('click', () => {
+    // Function to open cart modal
+    function openCartModal() {
         updateCartUI();
         cartModal.style.display = 'block';
-    });
+    }
+
+    // Cart icon click to open modal
+    cartIcon.addEventListener('click', openCartModal);
 
     // Close cart modal
     closeModal.addEventListener('click', () => {
@@ -196,12 +209,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Proceed to checkout
+    // Proceed to checkout from cart modal
     proceedToCheckout.addEventListener('click', () => {
         cartModal.style.display = 'none';
         document.getElementById('checkout').style.display = 'block';
         document.getElementById('checkout').scrollIntoView({ behavior: 'smooth' });
     });
+
+    // Main page "Proceed to Checkout" button
+    if (mainPageProceedToCheckout) {
+        mainPageProceedToCheckout.addEventListener('click', () => {
+            // If cart is empty, show alert
+            if (cart.length === 0) {
+                alert('Your cart is empty. Please add items before checkout.');
+                return;
+            }
+            
+            // Open cart modal first
+            openCartModal();
+        });
+    }
 });
 
 // Initialize
